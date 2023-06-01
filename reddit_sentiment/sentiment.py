@@ -3,6 +3,7 @@
 
 import logging
 import re
+import datetime
 
 from reddit_sentiment.api.scraper import Scraper
 from reddit_sentiment.api.reddit import Reddit
@@ -15,23 +16,26 @@ neutral_sentiment = "😐"
 
 
 class Sentiment():
-    """Performs the sentiment analysis on a given set of Reddit Objects."""
+    """Performs the sentiment analysis on a given set of Reddit Objects.
+    
+    :param enable_auth (optional): enable authentication to reddit api
+    :param generate_report (optional): output a file with relevant data
+    """
 
-    def __init__(self, auth_enabled=False):
+    def __init__(self, enable_auth=False, generate_report=False):
         self.api = Scraper()
         self.score = 0
         self.sentiment = neutral_sentiment
         self.headers = {'User-agent': "Reddit Sentiment Analyzer"}
-        self.authEnable = False
+        self.generate_report = generate_report
 
-        if auth_enabled:
+        if enable_auth:
             self.api = Reddit()
 
-    def get_user_sentiment(self, username, output_file=None):
+    def get_user_sentiment(self, username):
         """Obtains the sentiment for a user's comments.
 
         :param username: name of user to search
-        :param output_file (optional): file to output relevant data.
         """
         comments = self.api.parse_user(username, headers=self.headers)
         self.score = self._analyze(comments)
@@ -39,17 +43,18 @@ class Sentiment():
 
         user_id = "/user/{username}".format(username=username)
 
-        if output_file:
-            self._generate_output_file(output_file, comments, user_id)
+        if self.generate_report:
+            now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            report_file = "{user_id}-{now}.txt"
+            self._generate_output_file(report_file, comments, user_id)
         else:
              self._print_comments(comments, user_id)
 
-    def get_listing_sentiment(self, subreddit, article, output_file=None):
+    def get_listing_sentiment(self, subreddit, article):
         """Obtains the sentiment for a listing's comments.
 
         :param subreddit: a subreddit
         :param article: an article associated with the subreddit
-        :param output_file (optional): file to output relevant data.
         """
         comments = self.api.parse_listing(subreddit,
                                           article,
@@ -60,8 +65,10 @@ class Sentiment():
         article_id = "/r/{subreddit}/comments/{article}".format(subreddit=subreddit,
                                                                 article=article)
 
-        if output_file:
-            self._generate_output_file(output_file, comments, article_id)
+        if self.generate_report:
+            now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+            report_file = "{article_id}-{now}.txt"
+            self._generate_output_file(report_file, comments, article_id)
         else:
              self._print_comments(comments, article_id)
 
@@ -145,4 +152,3 @@ class Sentiment():
         for comment in comments:
             print("%s: %s" % (comment_count, comment.encode('ascii', 'ignore').decode("utf-8")))
             comment_count = comment_count + 1
-  

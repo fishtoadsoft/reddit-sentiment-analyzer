@@ -1,5 +1,4 @@
 import logging
-from types import BuiltinMethodType
 import requests
 
 from reddit_sentiment.api import api
@@ -32,19 +31,24 @@ class Scraper(api.API):
         comments = []
         json_resp = response.json()
 
+        # TODO: Replace nested ifs with try/catch
         for top in range(0, len(json_resp)):
-            if json_resp[top]["data"]["children"]:
-                children = json_resp[top]["data"]["children"]
-                for child in range(0, len(children)):
-                    data = children[child]["data"]
-                    if "body" in data:
-                         # remove empty spaces and weird reddit strings
-                        comment = data["body"].rstrip()
-                        comment = " ".join(comment.split())
-                        comment = comment.replace("&amp;#x200B;", "")
-                        
-                        if comment != "":
-                            comments.append(comment)
+            if json_resp[top]:
+                if json_resp[top]["data"]:
+                    if json_resp[top]["data"]["children"]:
+                        children = json_resp[top]["data"]["children"]
+                        for child in range(0, len(children)):
+                            if children[child]:
+                                if children[child]["data"]:
+                                    data = children[child]["data"]
+                                    if "body" in data:
+                                        # remove empty spaces and weird reddit strings
+                                        comment = data["body"].rstrip()
+                                        comment = " ".join(comment.split())
+                                        comment = comment.replace("&amp;#x200B;", "")
+
+                                        if comment != "":
+                                            comments.append(comment)
 
         return comments
 
@@ -65,6 +69,7 @@ class Scraper(api.API):
         comments = []
         json_resp = response.json()
 
+        # TODO: Add try/catch for missing keys
         if json_resp["data"]["children"]:
             children = json_resp["data"]["children"]
             for child in range(0, len(children)):
