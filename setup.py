@@ -29,18 +29,14 @@ setup(
 
     scripts=[],
     provides=[],
-    install_requires=['cliff', 'praw', 'nltk', 'requests', 'six'],
+    install_requires=['praw', 'nltk', 'requests', 'six', 'typer'],
     namespace_packages=[],
     packages=find_packages(),
     include_package_data=True,
 
     entry_points={
         'console_scripts': [
-            'reddit-sentiment = reddit_sentiment.cli:main'
-        ],
-        'reddit.sentiment': [
-            'listing = reddit_sentiment.cli:Listing',
-            'user = reddit_sentiment.cli:User'
+            'reddit-sentiment = reddit_sentiment.cli:app'
         ],
     },
 )
